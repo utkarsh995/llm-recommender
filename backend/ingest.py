@@ -49,7 +49,7 @@ def ingest_data():
         return
 
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM movies")
+    cursor.execute("SELECT * FROM content_details")
     movies = cursor.fetchall()
     cursor.close()
     conn.close()

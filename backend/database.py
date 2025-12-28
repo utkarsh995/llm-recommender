@@ -39,7 +39,7 @@ def fetch_movie_details(title_list):
     
     cursor = conn.cursor(dictionary=True)
     format_strings = ','.join(['%s'] * len(title_list))
-    query = f"SELECT * FROM movies WHERE title IN ({format_strings})"
+    query = f"SELECT * FROM content_details WHERE title IN ({format_strings})"
     
     try:
         cursor.execute(query, tuple(title_list))
@@ -69,7 +69,7 @@ def search_movies_wildcard(query_str):
         return []
     
     cursor = conn.cursor(dictionary=True)
-    sql = "SELECT program_id, title, year, image_url FROM movies WHERE title LIKE %s LIMIT 20"
+    sql = "SELECT program_id, title, year, image_url FROM content_details WHERE title LIKE %s LIMIT 20"
     
     try:
         cursor.execute(sql, (f"%{query_str}%",))
