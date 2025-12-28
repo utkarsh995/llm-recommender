@@ -13,26 +13,14 @@ def get_text_representation(movie):
     """Creates a text representation of the movie for embedding."""
     title = movie.get('title', '')
     plot = movie.get('Plot', '')
-    starring = movie.get('Starring', [])
-    if isinstance(starring, list):
-        starring = ", ".join(starring)
-    elif not isinstance(starring, str):
-        starring = ""
-        
-    director = ""
-    crew = movie.get('principalCrewMembers', [])
-    if isinstance(crew, list):
-        for member in crew:
-            if isinstance(member, dict) and member.get('category') == 'director':
-                director = member.get('nameId', '') # or imdbName if available? prompting says imdbName in schema
-                break
     
     # Combine relevant fields
-    text = f"Title: {title}. Plot: {plot}. Starring: {starring}. Director: {director}"
+    text = f"Title: {title}. Plot: {plot}"
     return text
 
-def generate_embeddings(texts, model, tokenizer):
+def generate_embeddings(texts, model, tokenizer, device):
     inputs = tokenizer(texts, padding=True, truncation=True, return_tensors="pt", max_length=512)
+    inputs = {k: v.to(device) for k, v in inputs.items()}
     with torch.no_grad():
         outputs = model(**inputs)
         # Use last hidden state's mean or specific pooling depending on model
@@ -59,6 +47,9 @@ def ingest_data():
     print("Loading Model...")
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
     model = AutoModel.from_pretrained(MODEL_NAME, trust_remote_code=True)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    model.to(device)
     model.eval()
 
     print("Initializing ChromaDB...")
@@ -92,7 +83,7 @@ def ingest_data():
             })
             
         if batch_texts:
-            embeddings = generate_embeddings(batch_texts, model, tokenizer)
+            embeddings = generate_embeddings(batch_texts, model, tokenizer, device)
             collection.upsert(
                 ids=batch_ids,
                 embeddings=embeddings,
