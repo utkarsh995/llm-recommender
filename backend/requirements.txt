@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+mysql-connector-python
+chromadb
+sentence-transformers
+python-dotenv
+openai
+pydantic
+requests
+torch
+transformers
+accelerate
